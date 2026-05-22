@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>История | AgroTech ИИ</title>
     <link rel="stylesheet" href="style.css">
     <script src="script.js"></script>
@@ -10,13 +10,15 @@
 <body>
 <div class="top-nav">
     <div class="logo">🌾 <span>AgroTech ИИ</span></div>
+    <button class="burger">☰</button>
     <div class="nav-links">
         <a href="dashboard.html" class="nav-item">🏠 Главная</a>
         <a href="techcard.html" class="nav-item">📊 Техкарта</a>
         <a href="history.html" class="nav-item active">📂 История</a>
         <a href="abbrev.html" class="nav-item">📖 Аббревиатуры</a>
+        <a href="profile.html" class="nav-item">👤 Профиль</a>
     </div>
-    <div class="profile-area"><span>👤</span> <span id="profileName"></span> <span id="logoutBtn">🚪 Выйти</span></div>
+    <div class="profile-area"><span>👤</span> <span id="profileName"></span> <span id="logoutBtn">🚪</span></div>
 </div>
 <div class="main-container">
     <div class="card">
@@ -29,6 +31,7 @@
     checkAuth();
     document.getElementById('profileName').innerText = localStorage.getItem('agro_current_user') || 'Профиль';
     document.getElementById('logoutBtn').addEventListener('click', logout);
+    initBurger();
 
     function renderHistory() {
         let history = getHistory();
@@ -43,7 +46,7 @@
             div.className = 'history-item';
             div.innerHTML = `
                 <div><strong>${item.cultureName}</strong> | ${item.area} га | ${item.tech==='traditional'?'Традиционная':(item.tech==='minimal'?'Mini-till':'No-Till')} <span style="background:#e4f0df; padding:3px 10px; border-radius:30px;">${item.date}</span></div>
-                <div style="display:flex; gap:8px;">
+                <div class="history-buttons">
                     <button class="viewBtn" data-id="${item.id}">👁️ Просмотр</button>
                     <button class="printBtn" data-id="${item.id}">🖨️ Печать</button>
                     <button class="exportBtn" data-id="${item.id}">📎 CSV</button>
@@ -52,7 +55,6 @@
             `;
             container.appendChild(div);
         });
-        // Привязка событий
         document.querySelectorAll('.viewBtn').forEach(btn => btn.addEventListener('click', (e) => viewHistoryItem(parseInt(btn.dataset.id))));
         document.querySelectorAll('.printBtn').forEach(btn => btn.addEventListener('click', (e) => printHistoryItem(parseInt(btn.dataset.id))));
         document.querySelectorAll('.exportBtn').forEach(btn => btn.addEventListener('click', (e) => exportHistoryItem(parseInt(btn.dataset.id))));

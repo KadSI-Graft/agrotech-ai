@@ -11,7 +11,6 @@ async function hashPassword(password) {
 async function getUsers() {
     let users = localStorage.getItem('agro_users');
     if (!users) {
-        // создаём demo пользователя с хэшем пароля "demo"
         const demoHash = await hashPassword("demo");
         let defaultUsers = [{ login: "demo", passwordHash: demoHash }];
         localStorage.setItem('agro_users', JSON.stringify(defaultUsers));

@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Техкарта | AgroTech ИИ</title>
     <link rel="stylesheet" href="style.css">
     <script src="script.js"></script>
@@ -10,13 +10,17 @@
 <body>
 <div class="top-nav">
     <div class="logo">🌾 <span>AgroTech ИИ</span></div>
+    <button class="burger">☰</button>
     <div class="nav-links">
         <a href="dashboard.html" class="nav-item">🏠 Главная</a>
         <a href="techcard.html" class="nav-item active">📊 Техкарта</a>
         <a href="history.html" class="nav-item">📂 История</a>
         <a href="abbrev.html" class="nav-item">📖 Аббревиатуры</a>
+        <a href="profile.html" class="nav-item">👤 Профиль</a>
     </div>
-    <div class="profile-area"><span>👤</span> <span id="profileName"></span> <span id="logoutBtn">🚪 Выйти</span></div>
+    <div class="profile-area">
+        <span>👤</span> <span id="profileName"></span> <span id="logoutBtn">🚪</span>
+    </div>
 </div>
 <div class="main-container">
     <div class="card">
@@ -28,7 +32,7 @@
             <div class="input-field"><label>🌿 Предшественник</label><select id="predecessorSelect"><option value="grain">Зерновые</option><option value="legume">Бобовые</option><option value="corn">Кукуруза</option></select></div>
             <div class="input-field"><label>🚜 Технология</label><select id="techSelect"><option value="traditional">Традиционная</option><option value="minimal">Mini-till</option><option value="notill">No-Till</option></select></div>
         </div>
-        <div style="display: flex; gap: 14px;">
+        <div style="display: flex; gap: 14px; flex-wrap: wrap;">
             <button id="calcBtn">🧮 Рассчитать</button>
             <button id="saveBtn">💾 Сохранить в историю</button>
             <button id="exportBtn" class="btn-secondary">📎 CSV</button>
@@ -37,10 +41,10 @@
     </div>
     <div class="card">
         <h3>Результат расчёта</h3>
-        <div style="overflow-x: auto;">
+        <div class="table-wrapper">
             <table id="techTable">
                 <thead><tr><th>№</th><th>Операция</th><th>Срок</th><th>Агрегат</th><th>ГСМ (л/га)</th><th>Всего ГСМ (л)</th><th>Удобрения</th><th>Семена (ц/га)</th></tr></thead>
-                <tbody id="tableBody"><td><td colspan="8">👉 Нажмите «Рассчитать»</td></tr></tbody>
+                <tbody id="tableBody"><tr><td colspan="8">👉 Нажмите «Рассчитать»</td></tr></tbody>
                 <tfoot id="tableFoot"></tfoot>
             </table>
         </div>
@@ -51,6 +55,7 @@
     checkAuth();
     document.getElementById('profileName').innerText = localStorage.getItem('agro_current_user') || 'Профиль';
     document.getElementById('logoutBtn').addEventListener('click', logout);
+    initBurger();
 
     let currentData = null;
 
@@ -109,7 +114,7 @@
     document.getElementById('saveBtn').addEventListener('click', saveToHistory);
     document.getElementById('exportBtn').addEventListener('click', exportCSV);
     document.getElementById('printBtn').addEventListener('click', printCard);
-    calculate(); // начальный расчёт
+    calculate();
 </script>
 </body>
 </html>

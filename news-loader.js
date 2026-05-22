@@ -3,7 +3,7 @@ async function loadRealNews() {
     if (!container) return;
     container.innerHTML = '<p>Загрузка свежих новостей...</p>';
     try {
-        // Используем CORS-прокси для RSS-ленты (например, agroxxi.ru)
+        // Используем CORS-прокси для RSS-ленты (agroxxi.ru)
         const rssUrl = 'https://api.rss2json.com/v1/api.json?rss_url=https://www.agroxxi.ru/rss/news.xml';
         const response = await fetch(rssUrl);
         const data = await response.json();

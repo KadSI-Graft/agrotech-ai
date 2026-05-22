@@ -1,4 +1,3 @@
-// Этот файл подключается только на dashboard.html
 window.addEventListener('DOMContentLoaded', () => {
     const ctxFuel = document.getElementById('fuelChart')?.getContext('2d');
     const ctxFert = document.getElementById('fertilizerChart')?.getContext('2d');
