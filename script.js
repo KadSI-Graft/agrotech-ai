@@ -7,16 +7,47 @@ async function hashPassword(password) {
     return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-// ---------- УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ ----------
+// ---------- УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ (с сохранением исходного пароля для админа) ----------
 async function getUsers() {
     let users = localStorage.getItem('agro_users');
+    let usersArray = [];
     if (!users) {
+        // Первый запуск: создаём demo и admin
         const demoHash = await hashPassword("demo");
-        let defaultUsers = [{ login: "demo", passwordHash: demoHash }];
-        localStorage.setItem('agro_users', JSON.stringify(defaultUsers));
-        return defaultUsers;
+        const adminHash = await hashPassword("admin123");
+        usersArray = [
+            { login: "demo", passwordHash: demoHash, plainPassword: "demo", registeredAt: new Date().toLocaleString() },
+            { login: "admin", passwordHash: adminHash, plainPassword: "admin123", registeredAt: new Date().toLocaleString() }
+        ];
+        localStorage.setItem('agro_users', JSON.stringify(usersArray));
+        return usersArray;
     }
-    return JSON.parse(users);
+    usersArray = JSON.parse(users);
+    // Проверяем, существует ли admin. Если нет – добавляем.
+    const adminExists = usersArray.some(u => u.login === 'admin');
+    if (!adminExists) {
+        const adminHash = await hashPassword("admin123");
+        usersArray.push({
+            login: "admin",
+            passwordHash: adminHash,
+            plainPassword: "admin123",
+            registeredAt: new Date().toLocaleString()
+        });
+        localStorage.setItem('agro_users', JSON.stringify(usersArray));
+    }
+    // Также убедимся, что demo существует (на случай ручного удаления)
+    const demoExists = usersArray.some(u => u.login === 'demo');
+    if (!demoExists) {
+        const demoHash = await hashPassword("demo");
+        usersArray.push({
+            login: "demo",
+            passwordHash: demoHash,
+            plainPassword: "demo",
+            registeredAt: new Date().toLocaleString()
+        });
+        localStorage.setItem('agro_users', JSON.stringify(usersArray));
+    }
+    return usersArray;
 }
 
 async function saveUsers(users) {
@@ -27,7 +58,12 @@ async function registerUser(login, password) {
     let users = await getUsers();
     if (users.find(u => u.login === login)) return false;
     const passwordHash = await hashPassword(password);
-    users.push({ login: login, passwordHash: passwordHash });
+    users.push({
+        login: login,
+        passwordHash: passwordHash,
+        plainPassword: password,
+        registeredAt: new Date().toLocaleString()
+    });
     await saveUsers(users);
     return true;
 }
@@ -35,7 +71,7 @@ async function registerUser(login, password) {
 async function loginUser(login, password) {
     let users = await getUsers();
     const inputHash = await hashPassword(password);
-    let user = users.find(u => u.login === login && u.passwordHash === inputHash);
+    const user = users.find(u => u.login === login && u.passwordHash === inputHash);
     if (user) {
         localStorage.setItem('agro_current_user', login);
         return true;
@@ -160,7 +196,6 @@ function exportTechCardToCSV(rows, totalFuelAll, fertTotal, seedTotal, area) {
     URL.revokeObjectURL(url);
 }
 
-// Бургер-меню (общая функция)
 function initBurger() {
     const burger = document.querySelector('.burger');
     const navLinks = document.querySelector('.nav-links');

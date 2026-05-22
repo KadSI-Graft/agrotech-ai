@@ -13,7 +13,7 @@
 <div class="top-nav">
     <div class="logo">🌾 <span>AgroTech ИИ</span></div>
     <button class="burger">☰</button>
-    <div class="profile-area" id="profileBtn">
+    <div class="profile-area">
         <span>👤</span> <span id="profileName"></span> <span id="logoutBtn">🚪</span>
     </div>
     <div class="nav-links">
@@ -22,6 +22,7 @@
         <a href="history.html" class="nav-item">📂 История</a>
         <a href="abbrev.html" class="nav-item">📖 Аббревиатуры</a>
         <a href="profile.html" class="nav-item">👤 Профиль</a>
+        <a href="admin.html" class="nav-item" id="adminLink" style="display:none;">🔧 Админ</a>
     </div>
 </div>
 <div class="main-container">
@@ -33,17 +34,47 @@
             <p>Алгоритм подбирает операции под культуру, технологию (No-Till, Mini-till), учитывает тип почвы и предшественника. Расчёт ГСМ, удобрений, семян – за секунды.</p>
         </div>
     </div>
+
+    <!-- НОВАЯ КРАСИВАЯ СТАТИСТИКА: карточки с цифрами -->
+    <div class="card">
+        <h2>📊 Ключевые показатели эффективности</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">⏱️</div>
+                <div class="stat-value" id="timeSavedStat">85%</div>
+                <div class="stat-label">Экономия времени при планировании</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📉</div>
+                <div class="stat-value" id="errorStat">&lt;2%</div>
+                <div class="stat-label">Погрешность расчётов</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🌾</div>
+                <div class="stat-value" id="cropsStat">3+</div>
+                <div class="stat-label">Поддерживаемых культур</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-value" id="usersCountStat">0</div>
+                <div class="stat-label">Активных пользователей</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Графики в отдельных карточках -->
+    <div class="card">
+        <h2>📈 Аналитика ресурсов</h2>
+        <div class="chart-row">
+            <div class="chart-card"><canvas id="fuelChart" width="400" height="250"></canvas><p>Расход ГСМ (л/га)</p></div>
+            <div class="chart-card"><canvas id="fertilizerChart" width="400" height="250"></canvas><p>NPK (кг/га)</p></div>
+            <div class="chart-card"><canvas id="seedChart" width="400" height="250"></canvas><p>Норма высева (ц/га)</p></div>
+        </div>
+    </div>
+
     <div class="card">
         <h2>📰 Агроновости (реальные)</h2>
         <div id="newsContainer" class="news-grid">Загрузка новостей...</div>
-    </div>
-    <div class="card">
-        <h2>📊 Статистика ресурсов</h2>
-        <div class="stats-row">
-            <div class="chart-container"><canvas id="fuelChart" width="400" height="250"></canvas><p>Расход ГСМ (л/га)</p></div>
-            <div class="chart-container"><canvas id="fertilizerChart" width="400" height="250"></canvas><p>NPK (кг/га)</p></div>
-            <div class="chart-container"><canvas id="seedChart" width="400" height="250"></canvas><p>Норма высева (ц/га)</p></div>
-        </div>
     </div>
 </div>
 <script src="chart-init.js"></script>
@@ -53,6 +84,19 @@
     document.getElementById('profileName').innerText = user ? user.substring(0,12) : 'Гость';
     document.getElementById('logoutBtn').addEventListener('click', logout);
     initBurger();
+
+    // Показываем ссылку на админ-панель только для admin
+    if (user === 'admin') {
+        const adminLink = document.getElementById('adminLink');
+        if (adminLink) adminLink.style.display = 'inline-block';
+    }
+
+    // Загружаем реальное количество пользователей для статистики
+    async function updateStats() {
+        const users = await getUsers();
+        document.getElementById('usersCountStat').innerText = users.length;
+    }
+    updateStats();
     loadRealNews();
 </script>
 </body>

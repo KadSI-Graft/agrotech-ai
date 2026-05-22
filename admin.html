@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель | AgroTech ИИ</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+</head>
+<body>
+<div class="top-nav">
+    <div class="logo">🌾 <span>AgroTech ИИ</span></div>
+    <button class="burger">☰</button>
+    <div class="profile-area">
+        <span>👤</span> <span id="profileName"></span> <span id="logoutBtn">🚪</span>
+    </div>
+    <div class="nav-links">
+        <a href="dashboard.html" class="nav-item active">🏠 Главная</a>
+        <a href="techcard.html" class="nav-item">📊 Техкарта</a>
+        <a href="history.html" class="nav-item">📂 История</a>
+        <a href="abbrev.html" class="nav-item">📖 Аббревиатуры</a>
+        <a href="profile.html" class="nav-item">👤 Профиль</a>
+        <a href="admin.html" class="nav-item" id="adminLink" style="display:none;">🔧 Админ</a>
+    </div>
+</div>
+<div class="main-container">
+    <div class="card">
+        <h2>🔒 Административная панель</h2>
+        <p>Только для пользователя <strong>admin</strong>. Здесь отображаются все зарегистрированные пользователи и их пароли в исходном виде (не хэшированные).</p>
+        <div id="userTableContainer" style="overflow-x:auto; margin-top:20px;">
+            <table id="adminUserTable" style="min-width:400px;">
+                <thead><tr><th>Логин</th><th>Пароль (исходный)</th><th>Дата регистрации</th></tr></thead>
+                <tbody id="adminUserList"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    checkAuth();
+    const currentUser = localStorage.getItem('agro_current_user');
+    if (currentUser !== 'admin') {
+        alert('Доступ запрещён. Только для администратора.');
+        window.location.href = 'dashboard.html';
+    }
+    document.getElementById('profileName').innerText = 'admin';
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+    initBurger();
+
+    async function loadUsersForAdmin() {
+        const users = await getUsers();
+        const tbody = document.getElementById('adminUserList');
+        tbody.innerHTML = '';
+        users.forEach(user => {
+            const row = tbody.insertRow();
+            row.insertCell(0).innerText = user.login;
+            const plain = user.plainPassword || (user.login === 'demo' ? 'demo' : (user.login === 'admin' ? 'admin123' : '—'));
+            row.insertCell(1).innerText = plain;
+            row.insertCell(2).innerText = user.registeredAt || '—';
+        });
+    }
+    loadUsersForAdmin();
+</script>
+</body>
+</html>
