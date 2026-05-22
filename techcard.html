@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Техкарта | AgroTech ИИ</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+</head>
+<body>
+<div class="top-nav">
+    <div class="logo">🌾 <span>AgroTech ИИ</span></div>
+    <div class="nav-links">
+        <a href="dashboard.html" class="nav-item">🏠 Главная</a>
+        <a href="techcard.html" class="nav-item active">📊 Техкарта</a>
+        <a href="history.html" class="nav-item">📂 История</a>
+        <a href="abbrev.html" class="nav-item">📖 Аббревиатуры</a>
+    </div>
+    <div class="profile-area"><span>👤</span> <span id="profileName"></span> <span id="logoutBtn">🚪 Выйти</span></div>
+</div>
+<div class="main-container">
+    <div class="card">
+        <h2>📋 Генератор технологической карты</h2>
+        <div class="flex-form">
+            <div class="input-field"><label>🌾 Культура</label><select id="cultureSelect"><option value="wheat">Яровая пшеница</option><option value="barley">Ячмень</option><option value="corn">Кукуруза</option></select></div>
+            <div class="input-field"><label>📐 Площадь (га)</label><input type="number" id="areaInput" value="150"></div>
+            <div class="input-field"><label>🧫 Тип почвы</label><select id="soilSelect"><option value="chernozem">Чернозём</option><option value="sodpodzol">Дерново-подзолистая</option><option value="chestnut">Каштановая</option></select></div>
+            <div class="input-field"><label>🌿 Предшественник</label><select id="predecessorSelect"><option value="grain">Зерновые</option><option value="legume">Бобовые</option><option value="corn">Кукуруза</option></select></div>
+            <div class="input-field"><label>🚜 Технология</label><select id="techSelect"><option value="traditional">Традиционная</option><option value="minimal">Mini-till</option><option value="notill">No-Till</option></select></div>
+        </div>
+        <div style="display: flex; gap: 14px;">
+            <button id="calcBtn">🧮 Рассчитать</button>
+            <button id="saveBtn">💾 Сохранить в историю</button>
+            <button id="exportBtn" class="btn-secondary">📎 CSV</button>
+            <button id="printBtn" class="btn-secondary">🖨️ Печать</button>
+        </div>
+    </div>
+    <div class="card">
+        <h3>Результат расчёта</h3>
+        <div style="overflow-x: auto;">
+            <table id="techTable">
+                <thead><tr><th>№</th><th>Операция</th><th>Срок</th><th>Агрегат</th><th>ГСМ (л/га)</th><th>Всего ГСМ (л)</th><th>Удобрения</th><th>Семена (ц/га)</th></tr></thead>
+                <tbody id="tableBody"><td><td colspan="8">👉 Нажмите «Рассчитать»</td></tr></tbody>
+                <tfoot id="tableFoot"></tfoot>
+            </table>
+        </div>
+        <div id="summaryArea" style="margin-top:20px; background:#edf7e8; border-radius:24px; padding:16px;"></div>
+    </div>
+</div>
+<script>
+    checkAuth();
+    document.getElementById('profileName').innerText = localStorage.getItem('agro_current_user') || 'Профиль';
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+
+    let currentData = null;
+
+    function renderCard(rows, totalFuelAll, fertTotal, seedTotal, area) {
+        let tbody = document.getElementById('tableBody');
+        let tfoot = document.getElementById('tableFoot');
+        tbody.innerHTML = "";
+        rows.forEach(r => {
+            let tr = document.createElement('tr');
+            tr.innerHTML = `<td>${r.num}</td><td style="text-align:left">${r.operation}</td><td>${r.term}</td><td style="text-align:left">${r.machine}</td><td>${r.fuelPerHa}</td><td>${r.totalFuel}</td><td>${r.fertilizer}</td><td>${r.seed}</td>`;
+            tbody.appendChild(tr);
+        });
+        let footRow = document.createElement('tr');
+        footRow.classList.add('total-row');
+        footRow.innerHTML = `<td colspan="4" style="text-align:right">ИТОГО:</td><td>—</td><td><strong>${totalFuelAll.toFixed(0)} л</strong></td><td colspan="2">${fertTotal}</td>`;
+        tfoot.innerHTML = "";
+        tfoot.appendChild(footRow);
+        document.getElementById('summaryArea').innerHTML = `<div>${seedTotal} | Общий расход ГСМ: ${totalFuelAll.toFixed(0)} л (на ${area} га)</div>`;
+    }
+
+    function calculate() {
+        const culture = document.getElementById('cultureSelect').value;
+        const area = parseFloat(document.getElementById('areaInput').value) || 100;
+        const soil = document.getElementById('soilSelect').value;
+        const pred = document.getElementById('predecessorSelect').value;
+        const tech = document.getElementById('techSelect').value;
+        const data = generateTechCardData(culture, area, soil, pred, tech);
+        currentData = { culture, area, soil, pred, tech, ...data };
+        renderCard(data.rows, data.totalFuelAll, data.fertTotal, data.seedTotal, data.area);
+    }
+
+    function saveToHistory() {
+        if (!currentData) { alert("Сначала рассчитайте карту"); return; }
+        let history = getHistory();
+        let newItem = { id: Date.now(), date: new Date().toLocaleString(), ...currentData };
+        history.unshift(newItem);
+        saveHistory(history);
+        alert("Сохранено в историю!");
+    }
+
+    function exportCSV() {
+        if (!currentData) { alert("Рассчитайте карту"); return; }
+        exportTechCardToCSV(currentData.rows, currentData.totalFuelAll, currentData.fertTotal, currentData.seedTotal, currentData.area);
+    }
+
+    function printCard() {
+        if (!currentData) { alert("Нет данных для печати"); return; }
+        let win = window.open('', '_blank');
+        let tableHtml = `<table border="1"><thead><tr><th>№</th><th>Операция</th><th>Срок</th><th>Агрегат</th><th>ГСМ л/га</th><th>Всего ГСМ л</th><th>Удобрения</th><th>Семена ц/га</th></tr></thead><tbody>${currentData.rows.map(r => `<tr><td>${r.num}</td><td>${r.operation}</td><td>${r.term}</td><td>${r.machine}</td><td>${r.fuelPerHa}</td><td>${r.totalFuel}</td><td>${r.fertilizer}</td><td>${r.seed}</td></tr>`).join('')}<tr style="background:#e0f0dc;"><td colspan="4">ИТОГО</td><td>—</td><td><strong>${currentData.totalFuelAll.toFixed(0)} л</strong></td><td colspan="2">${currentData.fertTotal}</td></tr></tbody></table><p>${currentData.seedTotal}</p>`;
+        win.document.write(`<html><head><title>Техкарта</title><style>body{font-family:sans-serif;padding:20px;} table{border-collapse:collapse;width:100%} td,th{border:1px solid #aaa;padding:6px;}</style></head><body><h2>Технологическая карта</h2>${tableHtml}</body></html>`);
+        win.document.close();
+        win.print();
+    }
+
+    document.getElementById('calcBtn').addEventListener('click', calculate);
+    document.getElementById('saveBtn').addEventListener('click', saveToHistory);
+    document.getElementById('exportBtn').addEventListener('click', exportCSV);
+    document.getElementById('printBtn').addEventListener('click', printCard);
+    calculate(); // начальный расчёт
+</script>
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Аббревиатуры | AgroTech ИИ</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+</head>
+<body>
+<div class="top-nav">
+    <div class="logo">🌾 <span>AgroTech ИИ</span></div>
+    <div class="nav-links">
+        <a href="dashboard.html" class="nav-item">🏠 Главная</a>
+        <a href="techcard.html" class="nav-item">📊 Техкарта</a>
+        <a href="history.html" class="nav-item">📂 История</a>
+        <a href="abbrev.html" class="nav-item active">📖 Аббревиатуры</a>
+    </div>
+    <div class="profile-area"><span>👤</span> <span id="profileName"></span> <span id="logoutBtn">🚪 Выйти</span></div>
+</div>
+<div class="main-container">
+    <div class="card">
+        <h2>📚 Справочник терминов</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap: 16px;">
+            <div><strong>ГСМ</strong> — горюче-смазочные материалы (дизельное топливо, масла). Ед. изм: л/га</div>
+            <div><strong>NPK</strong> — азот (N), фосфор (P₂O₅), калий (K₂O) — основные элементы питания растений.</div>
+            <div><strong>д.в.</strong> — действующее вещество удобрения (чистые NPK без примесей).</div>
+            <div><strong>ц/га</strong> — центнер на гектар (100 кг/га).</div>
+            <div><strong>л/га</strong> — литр на гектар.</div>
+            <div><strong>No-Till</strong> — нулевая обработка почвы (посев без вспашки).</div>
+            <div><strong>Mini-till</strong> — минимальная обработка (дискование).</div>
+            <div><strong>ИИ-агент</strong> — экспертная система на правилах.</div>
+            <div><strong>REST API</strong> — архитектура веб-сервисов.</div>
+            <div><strong>PDF/CSV</strong> — форматы экспорта документов.</div>
+        </div>
+    </div>
+</div>
+<script>
+    checkAuth();
+    document.getElementById('profileName').innerText = localStorage.getItem('agro_current_user') || 'Профиль';
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+</script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>История | AgroTech ИИ</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+</head>
+<body>
+<div class="top-nav">
+    <div class="logo">🌾 <span>AgroTech ИИ</span></div>
+    <div class="nav-links">
+        <a href="dashboard.html" class="nav-item">🏠 Главная</a>
+        <a href="techcard.html" class="nav-item">📊 Техкарта</a>
+        <a href="history.html" class="nav-item active">📂 История</a>
+        <a href="abbrev.html" class="nav-item">📖 Аббревиатуры</a>
+    </div>
+    <div class="profile-area"><span>👤</span> <span id="profileName"></span> <span id="logoutBtn">🚪 Выйти</span></div>
+</div>
+<div class="main-container">
+    <div class="card">
+        <h2>📂 Сохранённые техкарты</h2>
+        <div id="historyList" class="history-grid">Загрузка...</div>
+        <button id="clearAllBtn" style="background:#9c5a4a; margin-top:20px;">🗑️ Очистить всю историю</button>
+    </div>
+</div>
+<script>
+    checkAuth();
+    document.getElementById('profileName').innerText = localStorage.getItem('agro_current_user') || 'Профиль';
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+
+    function renderHistory() {
+        let history = getHistory();
+        let container = document.getElementById('historyList');
+        if (history.length === 0) {
+            container.innerHTML = '<div style="padding:20px; text-align:center;">Нет сохранённых карт.</div>';
+            return;
+        }
+        container.innerHTML = '';
+        history.forEach(item => {
+            let div = document.createElement('div');
+            div.className = 'history-item';
+            div.innerHTML = `
+                <div><strong>${item.cultureName}</strong> | ${item.area} га | ${item.tech==='traditional'?'Традиционная':(item.tech==='minimal'?'Mini-till':'No-Till')} <span style="background:#e4f0df; padding:3px 10px; border-radius:30px;">${item.date}</span></div>
+                <div style="display:flex; gap:8px;">
+                    <button class="viewBtn" data-id="${item.id}">👁️ Просмотр</button>
+                    <button class="printBtn" data-id="${item.id}">🖨️ Печать</button>
+                    <button class="exportBtn" data-id="${item.id}">📎 CSV</button>
+                    <button class="delBtn" data-id="${item.id}" style="background:#b0483a;">🗑️</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+        // Привязка событий
+        document.querySelectorAll('.viewBtn').forEach(btn => btn.addEventListener('click', (e) => viewHistoryItem(parseInt(btn.dataset.id))));
+        document.querySelectorAll('.printBtn').forEach(btn => btn.addEventListener('click', (e) => printHistoryItem(parseInt(btn.dataset.id))));
+        document.querySelectorAll('.exportBtn').forEach(btn => btn.addEventListener('click', (e) => exportHistoryItem(parseInt(btn.dataset.id))));
+        document.querySelectorAll('.delBtn').forEach(btn => btn.addEventListener('click', (e) => deleteHistoryItem(parseInt(btn.dataset.id))));
+    }
+
+    function viewHistoryItem(id) {
+        let history = getHistory();
+        let item = history.find(i => i.id === id);
+        if (item) {
+            localStorage.setItem('temp_techcard', JSON.stringify(item));
+            window.location.href = 'techcard.html?load=' + id;
+        }
+    }
+
+    function printHistoryItem(id) {
+        let history = getHistory();
+        let item = history.find(i => i.id === id);
+        if (!item) return;
+        let win = window.open('', '_blank');
+        let tableHtml = `<table border="1"><thead><tr><th>№</th><th>Операция</th><th>Срок</th><th>Агрегат</th><th>ГСМ л/га</th><th>Всего ГСМ л</th><th>Удобрения</th><th>Семена ц/га</th></tr></thead><tbody>${item.rows.map(r => `<tr><td>${r.num}</td><td>${r.operation}</td><td>${r.term}</td><td>${r.machine}</td><td>${r.fuelPerHa}</td><td>${r.totalFuel}</td><td>${r.fertilizer}</td><td>${r.seed}</td></tr>`).join('')}<tr style="background:#e0f0dc;"><td colspan="4">ИТОГО</td><td>—</td><td><strong>${item.totalFuelAll.toFixed(0)} л</strong></td><td colspan="2">${item.fertTotal}</td></tr></tbody></table><p>${item.seedTotal}</p>`;
+        win.document.write(`<html><head><title>Техкарта</title><style>body{font-family:sans-serif;padding:20px;} table{border-collapse:collapse;width:100%} td,th{border:1px solid #aaa;padding:6px;}</style></head><body><h2>Технологическая карта</h2>${tableHtml}</body></html>`);
+        win.document.close();
+        win.print();
+    }
+
+    function exportHistoryItem(id) {
+        let history = getHistory();
+        let item = history.find(i => i.id === id);
+        if (item) {
+            exportTechCardToCSV(item.rows, item.totalFuelAll, item.fertTotal, item.seedTotal, item.area);
+        }
+    }
+
+    function deleteHistoryItem(id) {
+        let history = getHistory();
+        let newHistory = history.filter(i => i.id !== id);
+        saveHistory(newHistory);
+        renderHistory();
+    }
+
+    document.getElementById('clearAllBtn').addEventListener('click', () => {
+        if (confirm('Удалить все сохранённые карты?')) {
+            saveHistory([]);
+            renderHistory();
+        }
+    });
+
+    renderHistory();
+</script>
+</body>
+</html>
