@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль | AgroTech ИИ</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+</head>
+<body>
+<div class="top-nav">
+    <div class="logo">🌾 <span>AgroTech ИИ</span></div>
+    <button class="burger">☰</button>
+    <div class="nav-links">
+        <a href="dashboard.html" class="nav-item">🏠 Главная</a>
+        <a href="techcard.html" class="nav-item">📊 Техкарта</a>
+        <a href="history.html" class="nav-item">📂 История</a>
+        <a href="abbrev.html" class="nav-item">📖 Аббревиатуры</a>
+        <a href="profile.html" class="nav-item active">👤 Профиль</a>
+    </div>
+    <div class="profile-area"><span>👤</span> <span id="profileName"></span> <span id="logoutBtn">🚪</span></div>
+</div>
+<div class="main-container">
+    <div class="card">
+        <h2>👤 Ваш профиль</h2>
+        <p><strong>Логин:</strong> <span id="currentUserLogin"></span></p>
+        <p><strong>Всего сохранённых техкарт:</strong> <span id="historyCount"></span></p>
+        <button id="clearMyHistoryBtn" style="background:#9c5a4a; margin-top:12px;">🗑️ Очистить мою историю</button>
+    </div>
+    <div class="card">
+        <h2>📋 Список зарегистрированных пользователей</h2>
+        <div id="userList" class="user-list">Загрузка...</div>
+        <p style="font-size:0.75rem; margin-top:10px;">* Пароли хранятся в зашифрованном виде (SHA-256).</p>
+    </div>
+</div>
+<script>
+    checkAuth();
+    const currentUser = localStorage.getItem('agro_current_user');
+    document.getElementById('profileName').innerText = currentUser || 'Гость';
+    document.getElementById('currentUserLogin').innerText = currentUser;
+    document.getElementById('logoutBtn').addEventListener('click', logout);
+    initBurger();
+
+    async function displayUserList() {
+        const users = await getUsers();
+        const container = document.getElementById('userList');
+        if (users.length === 0) {
+            container.innerHTML = '<p>Нет пользователей</p>';
+            return;
+        }
+        container.innerHTML = '<ul style="list-style:none;">' + users.map(u => `<li>👤 ${u.login} <span style="color:#5f7c5f;">(пароль зашифрован)</span></li>`).join('') + '</ul>';
+    }
+    displayUserList();
+
+    const history = getHistory();
+    document.getElementById('historyCount').innerText = history.length;
+
+    document.getElementById('clearMyHistoryBtn').addEventListener('click', () => {
+        if (confirm('Удалить ВСЕ ваши техкарты?')) {
+            saveHistory([]);
+            document.getElementById('historyCount').innerText = 0;
+            alert('История очищена');
+        }
+    });
+</script>
+</body>
+</html>

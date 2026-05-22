@@ -2,66 +2,58 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Главная | AgroTech ИИ</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="script.js"></script>
+    <script src="news-loader.js"></script>
 </head>
 <body>
 <div class="top-nav">
     <div class="logo">🌾 <span>AgroTech ИИ</span></div>
+    <button class="burger">☰</button>
     <div class="nav-links">
         <a href="dashboard.html" class="nav-item active">🏠 Главная</a>
         <a href="techcard.html" class="nav-item">📊 Техкарта</a>
         <a href="history.html" class="nav-item">📂 История</a>
         <a href="abbrev.html" class="nav-item">📖 Аббревиатуры</a>
+        <a href="profile.html" class="nav-item">👤 Профиль</a>
     </div>
     <div class="profile-area" id="profileBtn">
-        <span>👤</span> <span id="profileName"></span> <span id="logoutBtn" style="margin-left:8px;">🚪 Выйти</span>
+        <span>👤</span> <span id="profileName"></span> <span id="logoutBtn">🚪</span>
     </div>
 </div>
 <div class="main-container">
     <div class="card">
-        <h2>🌱 Цифровая трансформация АПК</h2>
-        <p style="font-size:1.05rem;">ИИ-агент «AgroTech» автоматизирует построение технологических карт с учётом агроклиматических зон, типов почв и севооборотов. Снижение времени планирования на 85%.</p>
-        <div style="background:#eef4ea; border-radius: 24px; padding: 20px; margin-top: 20px;">
-            <h3>📌 Теоретическая справка</h3>
-            <p>Технологическая карта — основной документ, регламентирующий перечень операций, сроки, расход ГСМ, удобрений, семян. Наш алгоритм использует базу знаний (правила, коэффициенты) для мгновенного расчёта.</p>
+        <h2>🌱 Цифровой агроном</h2>
+        <p>ИИ-агент «AgroTech» автоматизирует построение технологических карт, снижая время планирования на 85%.</p>
+        <div style="background:#eef4ea; border-radius: 24px; padding: 16px; margin-top: 16px;">
+            <h3>📌 Как это работает</h3>
+            <p>Алгоритм подбирает операции под культуру, технологию (No-Till, Mini-till), учитывает тип почвы и предшественника. Расчёт ГСМ, удобрений, семян – за секунды.</p>
         </div>
     </div>
     <div class="card">
-        <h2>📰 Агроновости</h2>
-        <div class="news-grid" id="newsContainer">
-            <!-- новости загружаются через JS -->
-        </div>
+        <h2>📰 Агроновости (реальные)</h2>
+        <div id="newsContainer" class="news-grid">Загрузка новостей...</div>
     </div>
     <div class="card">
-        <h2>📊 Статистика использования ресурсов</h2>
+        <h2>📊 Статистика ресурсов</h2>
         <div class="stats-row">
-            <div class="chart-container"><canvas id="fuelChart"></canvas><p style="text-align:center;">Расход ГСМ (л/га)</p></div>
-            <div class="chart-container"><canvas id="fertilizerChart"></canvas><p style="text-align:center;">NPK (кг/га)</p></div>
-            <div class="chart-container"><canvas id="seedChart"></canvas><p style="text-align:center;">Норма высева (ц/га)</p></div>
+            <div class="chart-container"><canvas id="fuelChart"></canvas><p>Расход ГСМ (л/га)</p></div>
+            <div class="chart-container"><canvas id="fertilizerChart"></canvas><p>NPK (кг/га)</p></div>
+            <div class="chart-container"><canvas id="seedChart"></canvas><p>Норма высева (ц/га)</p></div>
         </div>
     </div>
 </div>
 <script src="chart-init.js"></script>
 <script>
-    // проверка авторизации
-    let user = checkAuth();
-    if (user) {
-        document.getElementById('profileName').innerText = user.substring(0,12);
-    }
+    checkAuth();
+    const user = localStorage.getItem('agro_current_user');
+    document.getElementById('profileName').innerText = user ? user.substring(0,12) : 'Гость';
     document.getElementById('logoutBtn').addEventListener('click', logout);
-    // загрузка новостей
-    const newsData = [
-        { title: "Цифровые двойники полей", desc: "Россельхозцентр внедряет спутниковый мониторинг." },
-        { title: "Рост рынка ИИ в АПК", desc: "К 2026 году объём решений вырастет на 34%." },
-        { title: "Новые нормы высева", desc: "Минсельхоз обновил рекомендации на 2025 г." },
-        { title: "Гранты для фермеров", desc: "Цифровизация — приоритет субсидирования." }
-    ];
-    const container = document.getElementById('newsContainer');
-    container.innerHTML = newsData.map(n => `<div class="news-card"><h3>📢 ${n.title}</h3><p>${n.desc}</p></div>`).join('');
+    initBurger();
+    loadRealNews(); // из news-loader.js
 </script>
 </body>
 </html>

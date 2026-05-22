@@ -2,49 +2,53 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>AgroTech ИИ – Вход</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* локальные стили для страницы входа */
         .auth-container {
-            max-width: 420px;
-            margin: 80px auto;
+            max-width: 400px;
+            margin: 60px auto;
             background: white;
             border-radius: 40px;
-            padding: 32px;
+            padding: 28px 24px;
             box-shadow: 0 15px 35px rgba(0,20,0,0.2);
             text-align: center;
         }
         .auth-container input {
             width: 100%;
-            padding: 12px;
             margin: 10px 0;
-            border-radius: 40px;
-            border: 1px solid #c0ddb5;
-        }
-        .auth-container button {
-            width: 100%;
-            margin-top: 10px;
         }
         .switch {
             margin-top: 16px;
             color: #2e7d32;
             cursor: pointer;
+            display: inline-block;
         }
         .error {
             color: red;
-            margin: 10px 0;
+            margin: 8px 0;
+        }
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .btn-group button {
+            flex: 1;
+            background: #e0f0dc;
+            color: #1a3f1a;
         }
     </style>
 </head>
 <body>
 <div class="auth-container">
     <h1>🌾 AgroTech ИИ</h1>
-    <p>Цифровой агроном</p>
-    <div id="authTabs">
-        <button id="showLoginBtn" style="background:#e0f0dc; color:#1a3f1a;">Вход</button>
-        <button id="showRegisterBtn" style="background:#f0f7f0; color:#1a3f1a;">Регистрация</button>
+    <p style="margin-bottom: 20px;">Цифровой агроном</p>
+    <div class="btn-group">
+        <button id="showLoginBtn">Вход</button>
+        <button id="showRegisterBtn">Регистрация</button>
     </div>
     <div id="loginForm">
         <input type="text" id="loginUsername" placeholder="Логин">
@@ -61,42 +65,37 @@
 </div>
 <script src="script.js"></script>
 <script>
-    // Переключение форм
-    document.getElementById('showLoginBtn').addEventListener('click', () => {
+    document.getElementById('showLoginBtn').onclick = () => {
         document.getElementById('loginForm').style.display = 'block';
         document.getElementById('registerForm').style.display = 'none';
-    });
-    document.getElementById('showRegisterBtn').addEventListener('click', () => {
+    };
+    document.getElementById('showRegisterBtn').onclick = () => {
         document.getElementById('loginForm').style.display = 'none';
         document.getElementById('registerForm').style.display = 'block';
-    });
-
-    // Функции регистрации/логина (используют глобальные из script.js)
-    window.doRegister = () => {
+    };
+    document.getElementById('doLoginBtn').onclick = async () => {
+        const login = document.getElementById('loginUsername').value.trim();
+        const pass = document.getElementById('loginPassword').value.trim();
+        if (await loginUser(login, pass)) {
+            window.location.href = 'dashboard.html';
+        } else {
+            document.getElementById('loginError').innerText = 'Неверный логин или пароль';
+        }
+    };
+    document.getElementById('doRegisterBtn').onclick = async () => {
         const login = document.getElementById('regUsername').value.trim();
         const pass = document.getElementById('regPassword').value.trim();
         if (!login || !pass) {
             document.getElementById('regError').innerText = 'Заполните оба поля';
             return;
         }
-        if (registerUser(login, pass)) {
+        if (await registerUser(login, pass)) {
             alert('Регистрация успешна! Теперь войдите.');
             document.getElementById('showLoginBtn').click();
         } else {
-            document.getElementById('regError').innerText = 'Пользователь с таким логином уже существует';
+            document.getElementById('regError').innerText = 'Логин уже занят';
         }
     };
-    window.doLogin = () => {
-        const login = document.getElementById('loginUsername').value.trim();
-        const pass = document.getElementById('loginPassword').value.trim();
-        if (loginUser(login, pass)) {
-            window.location.href = 'dashboard.html';
-        } else {
-            document.getElementById('loginError').innerText = 'Неверный логин или пароль';
-        }
-    };
-    document.getElementById('doRegisterBtn').addEventListener('click', doRegister);
-    document.getElementById('doLoginBtn').addEventListener('click', doLogin);
 </script>
 </body>
 </html>

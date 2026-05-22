@@ -1,30 +1,42 @@
-// ---------- Управление пользователями ----------
-function getUsers() {
+// ---------- ХЭШИРОВАНИЕ ПАРОЛЕЙ (SHA-256) ----------
+async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// ---------- УПРАВЛЕНИЕ ПОЛЬЗОВАТЕЛЯМИ ----------
+async function getUsers() {
     let users = localStorage.getItem('agro_users');
     if (!users) {
-        // начальный тестовый пользователь
-        let defaultUsers = [{ login: "demo", password: btoa("demo") }];
+        // создаём demo пользователя с хэшем пароля "demo"
+        const demoHash = await hashPassword("demo");
+        let defaultUsers = [{ login: "demo", passwordHash: demoHash }];
         localStorage.setItem('agro_users', JSON.stringify(defaultUsers));
         return defaultUsers;
     }
     return JSON.parse(users);
 }
 
-function saveUsers(users) {
+async function saveUsers(users) {
     localStorage.setItem('agro_users', JSON.stringify(users));
 }
 
-function registerUser(login, password) {
-    let users = getUsers();
+async function registerUser(login, password) {
+    let users = await getUsers();
     if (users.find(u => u.login === login)) return false;
-    users.push({ login: login, password: btoa(password) });
-    saveUsers(users);
+    const passwordHash = await hashPassword(password);
+    users.push({ login: login, passwordHash: passwordHash });
+    await saveUsers(users);
     return true;
 }
 
-function loginUser(login, password) {
-    let users = getUsers();
-    let user = users.find(u => u.login === login && u.password === btoa(password));
+async function loginUser(login, password) {
+    let users = await getUsers();
+    const inputHash = await hashPassword(password);
+    let user = users.find(u => u.login === login && u.passwordHash === inputHash);
     if (user) {
         localStorage.setItem('agro_current_user', login);
         return true;
@@ -45,7 +57,7 @@ function checkAuth() {
     return currentUser;
 }
 
-// ---------- Привязка данных к пользователю ----------
+// ---------- ДАННЫЕ ПОЛЬЗОВАТЕЛЯ (история) ----------
 function getUserHistoryKey() {
     let user = localStorage.getItem('agro_current_user');
     return `agro_tech_history_${user}`;
@@ -62,7 +74,7 @@ function saveHistory(history) {
     localStorage.setItem(key, JSON.stringify(history));
 }
 
-// ---------- Данные для техкарты (справочники) ----------
+// ---------- СПРАВОЧНИКИ ДЛЯ ТЕХКАРТЫ ----------
 const culturesDB = {
     wheat: { name: "Яровая пшеница", seedNorm_kg_ha: 220 },
     barley: { name: "Ячмень", seedNorm_kg_ha: 210 },
@@ -131,7 +143,6 @@ function generateTechCardData(cultureId, areaHa, soilType, predecessor, techType
     return { rows, totalFuelAll, fertTotal, seedTotal: `Семян: ${totalSeedCentner.toFixed(1)} ц всего (${seedCentnerPerHa.toFixed(1)} ц/га)`, area:areaHa, cultureName: culturesDB[cultureId].name };
 }
 
-// Экспорт в CSV
 function exportTechCardToCSV(rows, totalFuelAll, fertTotal, seedTotal, area) {
     let csvRows = [['№','Операция','Срок','Агрегат','ГСМ л/га','Всего ГСМ','Удобрения','Семена ц/га']];
     rows.forEach(r => {
@@ -148,4 +159,15 @@ function exportTechCardToCSV(rows, totalFuelAll, fertTotal, seedTotal, area) {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+}
+
+// Бургер-меню (общая функция)
+function initBurger() {
+    const burger = document.querySelector('.burger');
+    const navLinks = document.querySelector('.nav-links');
+    if (burger && navLinks) {
+        burger.addEventListener('click', () => {
+            navLinks.classList.toggle('show');
+        });
+    }
 }
